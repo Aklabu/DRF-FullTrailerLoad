@@ -1,0 +1,10 @@
+from django.apps import AppConfig
+
+
+class MarketplaceConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'apps.marketplace'
+    label = 'marketplace'
+
+    def ready(self):
+        pass  # reserved for signals
