@@ -16,10 +16,33 @@ def send_welcome_email(user, company):
     send_mail(subject, body, None, [user.email], fail_silently=True)
 
 
+def send_email_verification_otp(user, code):
+    send_mail(
+        'Verify your FullTrailerLoad email',
+        f'Your email verification code is: {code}\n\nIt expires in 15 minutes.\n\n'
+        'If you did not register, please ignore this email.',
+        None,
+        [user.email],
+        fail_silently=True,
+    )
+
+
+def send_login_2fa_otp(user, code):
+    send_mail(
+        'Your FullTrailerLoad login code',
+        f'Your login verification code is: {code}\n\nIt expires in 15 minutes.\n\n'
+        'If you did not attempt to log in, please secure your account immediately.',
+        None,
+        [user.email],
+        fail_silently=True,
+    )
+
+
 def send_otp_email(user, code):
     send_mail(
         'Your FullTrailerLoad password reset code',
-        f'Your one-time code is: {code}\n\nIt expires in 15 minutes.',
+        f'Your password reset code is: {code}\n\nIt expires in 15 minutes.\n\n'
+        'If you did not request this, please ignore this email.',
         None,
         [user.email],
         fail_silently=True,

@@ -34,7 +34,6 @@ class Company(models.Model):
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     zip_code = models.CharField(max_length=20)
-    country = models.CharField(max_length=100, default='US')
     website = models.CharField(max_length=255, blank=True)
     role = models.CharField(max_length=10, choices=Role.choices)
     tier = models.CharField(max_length=15, choices=Tier.choices, default=Tier.BULLETIN)
@@ -91,7 +90,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
     )
     email = models.EmailField(unique=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)  # activated after email OTP verification
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
 
@@ -154,15 +153,19 @@ def _otp_expiry():
     return timezone.now() + timedelta(minutes=15)
 
 
-# Short-lived one-time codes for password reset
+# Short-lived one-time codes for email verification, login 2FA, and password reset
 class OtpCode(models.Model):
     class Purpose(models.TextChoices):
+        EMAIL_VERIFICATION = 'email_verification', 'Email Verification'
+        LOGIN_2FA = 'login_2fa', 'Login 2FA'
         PASSWORD_RESET = 'password_reset', 'Password Reset'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otp_codes')
     code = models.CharField(max_length=6)
     purpose = models.CharField(max_length=20, choices=Purpose.choices)
+    # Issued after OTP is verified for password_reset — used by /password/reset/
+    reset_token = models.UUIDField(null=True, blank=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField(default=_otp_expiry)
     used = models.BooleanField(default=False)

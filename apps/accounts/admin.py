@@ -106,7 +106,7 @@ class CompanyAdmin(admin.ModelAdmin):
             'fields': ('id', 'name', 'email', 'phone', 'website'),
         }),
         ('Address', {
-            'fields': ('address_line1', 'address_line2', 'city', 'state', 'zip_code', 'country'),
+            'fields': ('address_line1', 'address_line2', 'city', 'state', 'zip_code'),
         }),
         ('Status', {
             'fields': (
