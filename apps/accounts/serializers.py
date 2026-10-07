@@ -282,7 +282,9 @@ class ResetPasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({'reset_token': 'Invalid or expired reset token.'})
 
         # Reuse expires_at — reset token inherits the same 15-min window
-        if otp.used or timezone.now() > otp.expires_at:
+        # Don't check otp.used here — the OTP was already marked used during /otp/verify/
+        # The reset_token is the second-stage credential, expiry is the only guard
+        if timezone.now() > otp.expires_at:
             raise serializers.ValidationError({'reset_token': 'Invalid or expired reset token.'})
 
         attrs['_user'] = otp.user
@@ -352,9 +354,8 @@ class VerifyOtpSerializer(serializers.Serializer):
 
         purpose = attrs['purpose']
 
-        # For email_verification the user is inactive — skip is_active check
-        # For all other purposes the user must be active
-        if purpose != OtpCode.Purpose.EMAIL_VERIFICATION and not user.is_active:
+        # email_verification and password_reset both work on inactive accounts
+        if purpose == OtpCode.Purpose.LOGIN_2FA and not user.is_active:
             raise serializers.ValidationError({
                 'detail': 'Email not verified. Please verify your email first.',
                 'code': 'email_not_verified',

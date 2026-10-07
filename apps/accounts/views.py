@@ -239,3 +239,29 @@ class ChangePasswordView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
         return CustomResponse.success(message='Password changed successfully.')
+
+
+# blacklists the submitted refresh token so it can no longer be used to obtain new access tokens
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return CustomResponse.error(
+                'Refresh token is required.',
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            from rest_framework_simplejwt.tokens import RefreshToken
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        except Exception:
+            return CustomResponse.error(
+                'Invalid or expired token.',
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+        return CustomResponse.success(
+            message='Logged out successfully.',
+            status_code=status.HTTP_204_NO_CONTENT,
+        )

@@ -7,6 +7,7 @@ from .views import (
     DocumentListView,
     ForgotPasswordView,
     LoginView,
+    LogoutView,
     MeView,
     OnboardingSeenView,
     RegisterView,
@@ -19,6 +20,7 @@ urlpatterns = [
     # Auth
     path('register/', RegisterView.as_view(), name='accounts-register'),
     path('login/', LoginView.as_view(), name='accounts-login'),
+    path('logout/', LogoutView.as_view(), name='accounts-logout'),
     path('token/refresh/', TokenRefreshView.as_view(), name='accounts-token-refresh'),
     # Universal OTP verification
     path('otp/verify/', VerifyOtpView.as_view(), name='accounts-otp-verify'),

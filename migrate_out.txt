@@ -1,4 +1,0 @@
-Operations to perform:
-  Apply all migrations: accounts, admin, auth, contenttypes, marketplace, messaging, reviews, services, sessions
-Running migrations:
-  Applying services.0001_initial... OK
