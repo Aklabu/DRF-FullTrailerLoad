@@ -1,4 +1,5 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from .models import (
     CommunityMessage,
@@ -24,7 +25,7 @@ class MessageInline(admin.TabularInline):
 
 # admin view for direct message conversations with message inline
 @admin.register(Conversation)
-class ConversationAdmin(admin.ModelAdmin):
+class ConversationAdmin(UnfoldModelAdmin):
     list_display = ('id', 'participant_a_email', 'participant_b_email', 'job_id', 'last_message_at')
     search_fields = ('participant_a__email', 'participant_b__email', 'load__job_id')
     readonly_fields = ('id', 'created_at', 'last_message_at')
@@ -45,7 +46,7 @@ class ConversationAdmin(admin.ModelAdmin):
 
 # admin view for individual direct messages
 @admin.register(Message)
-class MessageAdmin(admin.ModelAdmin):
+class MessageAdmin(UnfoldModelAdmin):
     list_display = ('id', 'conversation_id', 'sender_email', 'body_preview', 'status', 'sent_at')
     list_filter = ('status',)
     search_fields = ('sender__email', 'body')
@@ -62,7 +63,7 @@ class MessageAdmin(admin.ModelAdmin):
 
 # admin view for community chat messages
 @admin.register(CommunityMessage)
-class CommunityMessageAdmin(admin.ModelAdmin):
+class CommunityMessageAdmin(UnfoldModelAdmin):
     list_display = ('id', 'sender_email', 'body_preview', 'sent_at')
     search_fields = ('sender__email', 'body')
     readonly_fields = ('id', 'sent_at')

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from .models import AuditLog, Bid, Booking, CapacityOffer, CapacityPosting, Load
 
@@ -29,7 +30,7 @@ class AuditLogInline(admin.TabularInline):
 
 # admin view for loads with bid and audit log inlines
 @admin.register(Load)
-class LoadAdmin(admin.ModelAdmin):
+class LoadAdmin(UnfoldModelAdmin):
     list_display = ('job_id', 'poster_email', 'status', 'origin', 'destination', 'pickup_date', 'posted_at')
     list_filter = ('status', 'equipment_type', 'pricing_mode', 'visibility')
     search_fields = ('job_id', 'origin', 'destination', 'poster__email')
@@ -52,7 +53,7 @@ class LoadAdmin(admin.ModelAdmin):
 
 # admin view for individual bids across all loads
 @admin.register(Bid)
-class BidAdmin(admin.ModelAdmin):
+class BidAdmin(UnfoldModelAdmin):
     list_display = ('id', 'load_job_id', 'carrier_email', 'amount', 'counter_amount', 'status', 'placed_at')
     list_filter = ('status',)
     search_fields = ('load__job_id', 'carrier__email')
@@ -69,7 +70,7 @@ class BidAdmin(admin.ModelAdmin):
 
 # admin view for confirmed bookings — read-only booking_ref
 @admin.register(Booking)
-class BookingAdmin(admin.ModelAdmin):
+class BookingAdmin(UnfoldModelAdmin):
     list_display = ('booking_ref', 'load_job_id', 'shipper_email', 'carrier_email', 'agreed_price', 'confirmed_at')
     search_fields = ('booking_ref', 'load__job_id', 'shipper__email', 'carrier__email')
     readonly_fields = ('id', 'booking_ref', 'confirmed_at')
@@ -101,7 +102,7 @@ class CapacityOfferInline(admin.TabularInline):
 
 # admin view for capacity postings with offers inline
 @admin.register(CapacityPosting)
-class CapacityPostingAdmin(admin.ModelAdmin):
+class CapacityPostingAdmin(UnfoldModelAdmin):
     list_display = ('id', 'carrier_email', 'origin', 'destination', 'available_from', 'available_to', 'status', 'posted_at')
     list_filter = ('status', 'equipment_type')
     search_fields = ('origin', 'destination', 'carrier__email')

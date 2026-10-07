@@ -1,11 +1,12 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from .models import CompanyRating, Review
 
 
 # admin view for all submitted reviews with filtering by rating
 @admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
+class ReviewAdmin(UnfoldModelAdmin):
     list_display = ('id', 'reviewer_name', 'reviewee_name', 'overall_rating', 'booking_ref', 'created_at')
     list_filter = ('overall_rating',)
     search_fields = ('reviewer__name', 'reviewee__name', 'booking__booking_ref')
@@ -26,7 +27,7 @@ class ReviewAdmin(admin.ModelAdmin):
 
 # admin view for the denormalized rating cache — read-only, updated by signal
 @admin.register(CompanyRating)
-class CompanyRatingAdmin(admin.ModelAdmin):
+class CompanyRatingAdmin(UnfoldModelAdmin):
     list_display = ('company_name', 'avg_rating', 'review_count', 'last_updated')
     search_fields = ('company__name',)
     readonly_fields = ('company', 'avg_rating', 'review_count', 'last_updated')

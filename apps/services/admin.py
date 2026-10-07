@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils import timezone
+from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from .models import SupportAttachment, SupportTicket
 
@@ -16,7 +17,7 @@ class SupportAttachmentInline(admin.TabularInline):
 
 # main admin for support tickets — filterable by status, urgency and category
 @admin.register(SupportTicket)
-class SupportTicketAdmin(admin.ModelAdmin):
+class SupportTicketAdmin(UnfoldModelAdmin):
     list_display = (
         'id', 'full_name', 'work_email', 'inquiry_category',
         'urgency', 'status', 'assigned_to', 'created_at',

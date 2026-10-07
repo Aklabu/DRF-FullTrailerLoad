@@ -2,6 +2,7 @@ from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils import timezone
 from django.utils.html import format_html
+from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
 from .models import Company, ComplianceDocument, DotMcInfo, OtpCode, User
 from .notifications import (
@@ -93,7 +94,7 @@ def reject_company(modeladmin, request, queryset):
 
 
 @admin.register(Company)
-class CompanyAdmin(admin.ModelAdmin):
+class CompanyAdmin(UnfoldModelAdmin):
     list_display = ('name', 'email', 'role', 'tier', 'verification_status', 'submitted_at', 'reviewed_at')
     list_filter = ('role', 'tier', 'verification_status')
     search_fields = ('name', 'email')
@@ -124,7 +125,7 @@ class CompanyAdmin(admin.ModelAdmin):
 
 # Extends Django's built-in UserAdmin, swapping username for email
 @admin.register(User)
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(UnfoldModelAdmin, BaseUserAdmin):
     list_display = ('email', 'company', 'is_active', 'is_staff', 'date_joined')
     list_filter = ('is_active', 'is_staff')
     search_fields = ('email', 'company__name')
@@ -149,7 +150,7 @@ class UserAdmin(BaseUserAdmin):
 
 # Read-only — exists for debugging OTP issues, not for editing
 @admin.register(OtpCode)
-class OtpCodeAdmin(admin.ModelAdmin):
+class OtpCodeAdmin(UnfoldModelAdmin):
     list_display = ('user_email', 'code', 'purpose', 'expires_at', 'used')
     list_filter = ('purpose', 'used')
     search_fields = ('user__email',)
