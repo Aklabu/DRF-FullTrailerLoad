@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/marketplace/', include('apps.marketplace.urls')),
     path('api/', include('apps.messaging.urls')),
     path('api/', include('apps.reviews.urls')),
+    path('api/', include('apps.services.urls')),
 ]
 
 if settings.DEBUG:
