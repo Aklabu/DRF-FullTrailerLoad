@@ -104,6 +104,13 @@ class LoadDetailSerializer(serializers.ModelSerializer):
     bids = BidSerializer(many=True, read_only=True)
     audit_log = AuditLogSerializer(many=True, read_only=True)
     bid_count = serializers.IntegerField(source='bids.count', read_only=True)
+    booking_id = serializers.SerializerMethodField()
+
+    def get_booking_id(self, obj):
+        # expose booking id so frontend can navigate to the booking detail page
+        if hasattr(obj, 'booking'):
+            return str(obj.booking.id)
+        return None
 
     class Meta:
         model = Load
@@ -112,7 +119,7 @@ class LoadDetailSerializer(serializers.ModelSerializer):
             'origin', 'destination', 'pickup_date', 'delivery_date',
             'cubic_feet', 'weight', 'equipment_type',
             'fixed_price', 'special_requirements',
-            'posted_at', 'bid_count', 'bids', 'audit_log',
+            'posted_at', 'bid_count', 'bids', 'audit_log', 'booking_id',
         )
 
 
@@ -172,7 +179,7 @@ class LoadCarrierDetailSerializer(serializers.ModelSerializer):
 # exposes full contact info — only shown on booking confirmation (contact-reveal gate)
 class BookingPartySerializer(serializers.Serializer):
     company_name = serializers.CharField(source='company.name', read_only=True)
-    email = serializers.EmailField(source='email', read_only=True)
+    email = serializers.EmailField(read_only=True)
     phone = serializers.CharField(source='company.phone', read_only=True)
 
 
