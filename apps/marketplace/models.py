@@ -118,6 +118,8 @@ class Booking(models.Model):
     )
     agreed_price = models.DecimalField(max_digits=10, decimal_places=2)
     confirmed_at = models.DateTimeField(auto_now_add=True)
+    # set when both parties mark the job complete
+    completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['-confirmed_at']
