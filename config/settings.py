@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     # local
     'apps.accounts',
     'apps.marketplace',
+    'apps.messaging',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +134,15 @@ CORS_ALLOW_CREDENTIALS = True
 # Email
 EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@fulltrailerload.com')
+
+# Django Channels — use Redis as the channel layer backend
+ASGI_APPLICATION = 'config.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [env('REDIS_URL', default='redis://127.0.0.1:6379')],
+        },
+    },
+}
