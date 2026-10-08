@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from utils.response import CustomResponse
+from apps.notifications import services as notification_service
 
 from .models import (
     CommunityMessage,
@@ -147,6 +148,24 @@ class SendMessageView(APIView):
 
         self._broadcast(conv, message, request)
 
+        recipient = conv.other_participant(request.user)
+        sender_company = getattr(request.user, 'company', None)
+        sender_name = sender_company.name if sender_company else request.user.email
+        
+        notification_service.notify(
+            recipient=recipient,
+            notification_type='new_message',
+            actor=request.user,
+            target_kind='conversation',
+            target_id=str(conv.id),
+            group_key=f'conv:{conv.id}',
+            meta={
+                'sender_name': sender_name,
+                'conversation_id': str(conv.id),
+                'count': 1
+            }
+        )
+
         return CustomResponse.success(
             message='Message sent.',
             data={
@@ -235,6 +254,12 @@ class MarkReadView(APIView):
             user=request.user,
             defaults={'last_read_at': timezone.now()},
         )
+        
+        notification_service.mark_conversation_notifications_read(
+            user=request.user,
+            conversation_id=str(conversation_id)
+        )
+        
         return CustomResponse.success(
             message='Marked as read.',
             status_code=status.HTTP_204_NO_CONTENT,

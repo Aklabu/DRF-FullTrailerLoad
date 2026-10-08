@@ -75,15 +75,35 @@ class DirectMessageConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def _save_message(self, body):
         from .models import Conversation, Message
+        from apps.notifications import services as notification_service
+        
         conv = Conversation.objects.get(id=self.conversation_id)
         message = Message.objects.create(
             conversation=conv,
             sender=self.user,
             body=body,
         )
-        # keep last_message_at in sync for inbox ordering
         conv.last_message_at = message.sent_at
         conv.save(update_fields=['last_message_at'])
+        
+        recipient = conv.other_participant(self.user)
+        sender_company = getattr(self.user, 'company', None)
+        sender_name = sender_company.name if sender_company else self.user.email
+        
+        notification_service.notify(
+            recipient=recipient,
+            notification_type='new_message',
+            actor=self.user,
+            target_kind='conversation',
+            target_id=str(conv.id),
+            group_key=f'conv:{conv.id}',
+            meta={
+                'sender_name': sender_name,
+                'conversation_id': str(conv.id),
+                'count': 1
+            }
+        )
+        
         return message
 
     @database_sync_to_async

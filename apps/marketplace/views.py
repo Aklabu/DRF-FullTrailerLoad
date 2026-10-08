@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from utils.response import CustomResponse
+from apps.notifications import services as notification_service
 
 from .models import AuditLog, Bid, Booking, CapacityOffer, CapacityPosting, Load
 from .permissions import (
@@ -248,6 +249,26 @@ class BidCounterView(APIView):
         carrier_name = carrier_name.name if carrier_name else bid.carrier.email
         _log(load, request.user, f'Counter offer of ${bid.counter_amount} sent to {carrier_name}.')
 
+        notification_service.notify(
+            recipient=bid.carrier,
+            notification_type='bid_countered',
+            actor=request.user,
+            target_kind='load',
+            target_id=str(load.id),
+            priority='high',
+            meta={
+                'bid_id': str(bid.id),
+                'counter_amount': str(bid.counter_amount),
+                'load_id': str(load.id)
+            }
+        )
+
+        notification_service.mark_related_notifications_read(
+            user=request.user,
+            notification_type='bid_placed',
+            meta_filters={'bid_id': str(bid.id)}
+        )
+
         return CustomResponse.success(
             message='Counter offer sent.',
             data=BidSerializer(bid).data,
@@ -432,6 +453,20 @@ class PlaceBidView(APIView):
         carrier_name = carrier_name.name if carrier_name else request.user.email
         _log(load, request.user, f'{carrier_name} placed a bid of ${bid.amount}.')
 
+        notification_service.notify(
+            recipient=load.poster,
+            notification_type='bid_placed',
+            actor=request.user,
+            target_kind='load',
+            target_id=str(load.id),
+            meta={
+                'bid_id': str(bid.id),
+                'amount': str(bid.amount),
+                'carrier_name': carrier_name,
+                'load_id': str(load.id)
+            }
+        )
+
         return CustomResponse.success(
             message='Bid placed.',
             data=BidSerializer(bid).data,
@@ -514,6 +549,25 @@ class AcceptCounterView(APIView):
         carrier_name = getattr(request.user, 'company', None)
         carrier_name = carrier_name.name if carrier_name else request.user.email
         _log(load, request.user, f'{carrier_name} accepted counter offer of ${bid.amount}. Load booked.')
+
+        notification_service.notify(
+            recipient=load.poster,
+            notification_type='counter_accepted',
+            actor=request.user,
+            target_kind='booking',
+            target_id=str(booking.id),
+            meta={
+                'agreed_price': str(bid.amount),
+                'carrier_name': carrier_name,
+                'booking_id': str(booking.id)
+            }
+        )
+
+        notification_service.mark_related_notifications_read(
+            user=request.user,
+            notification_type='bid_countered',
+            meta_filters={'bid_id': str(bid.id)}
+        )
 
         return CustomResponse.success(
             message='Counter accepted. Load is now booked.',
