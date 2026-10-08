@@ -207,10 +207,14 @@ class SendMessageView(APIView):
             'sent_at': message.sent_at.isoformat(),
             'status': 'sent',
         }
-        async_to_sync(channel_layer.group_send)(
-            f'conversation_{conv.id}',
-            {'type': 'chat_message', 'payload': payload},
-        )
+        try:
+            async_to_sync(channel_layer.group_send)(
+                f'conversation_{conv.id}',
+                {'type': 'chat_message', 'payload': payload},
+            )
+        except Exception:
+            # Redis unavailable — message is already saved, WS broadcast is best-effort
+            pass
 
 
 # upserts a read receipt for the current user — drives unread_count to zero in the inbox
@@ -357,7 +361,11 @@ class SendCommunityMessageView(APIView):
             'sent_at': message.sent_at.isoformat(),
             'status': 'sent',
         }
-        async_to_sync(channel_layer.group_send)(
-            'community_chat',
-            {'type': 'community_message', 'payload': payload},
-        )
+        try:
+            async_to_sync(channel_layer.group_send)(
+                'community_chat',
+                {'type': 'community_message', 'payload': payload},
+            )
+        except Exception:
+            # Redis unavailable — message is already saved, WS broadcast is best-effort
+            pass

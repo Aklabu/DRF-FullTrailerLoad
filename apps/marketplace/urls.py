@@ -28,16 +28,16 @@ urlpatterns = [
     path('loads/<uuid:load_id>/', LoadDetailView.as_view(), name='marketplace-load-detail'),
     path('my-loads/', MyLoadListView.as_view(), name='marketplace-my-loads'),
 
-    # shipper/broker bid actions
-    path('loads/<uuid:load_id>/bids/<uuid:bid_id>/accept/', BidAcceptView.as_view(), name='marketplace-bid-accept'),
-    path('loads/<uuid:load_id>/bids/<uuid:bid_id>/counter/', BidCounterView.as_view(), name='marketplace-bid-counter'),
-    path('loads/<uuid:load_id>/bids/<uuid:bid_id>/reject/', BidRejectView.as_view(), name='marketplace-bid-reject'),
-
-    # carrier bid actions
+    # carrier bid actions — must come before <uuid:bid_id> patterns so "mine" isn't swallowed by the UUID converter
     path('loads/<uuid:load_id>/bids/', PlaceBidView.as_view(), name='marketplace-bid-place'),
     path('loads/<uuid:load_id>/bids/mine/', MyBidOnLoadView.as_view(), name='marketplace-bid-mine'),
     path('loads/<uuid:load_id>/bids/mine/withdraw/', WithdrawBidView.as_view(), name='marketplace-bid-withdraw'),
     path('loads/<uuid:load_id>/bids/mine/accept-counter/', AcceptCounterView.as_view(), name='marketplace-bid-accept-counter'),
+
+    # shipper/broker bid actions
+    path('loads/<uuid:load_id>/bids/<uuid:bid_id>/accept/', BidAcceptView.as_view(), name='marketplace-bid-accept'),
+    path('loads/<uuid:load_id>/bids/<uuid:bid_id>/counter/', BidCounterView.as_view(), name='marketplace-bid-counter'),
+    path('loads/<uuid:load_id>/bids/<uuid:bid_id>/reject/', BidRejectView.as_view(), name='marketplace-bid-reject'),
 
     # bookings
     path('bookings/<uuid:booking_id>/', BookingDetailView.as_view(), name='marketplace-booking-detail'),

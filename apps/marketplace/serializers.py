@@ -178,6 +178,7 @@ class LoadCarrierDetailSerializer(serializers.ModelSerializer):
 
 # exposes full contact info — only shown on booking confirmation (contact-reveal gate)
 class BookingPartySerializer(serializers.Serializer):
+    id = serializers.UUIDField(source='company.id', read_only=True)
     company_name = serializers.CharField(source='company.name', read_only=True)
     email = serializers.EmailField(read_only=True)
     phone = serializers.CharField(source='company.phone', read_only=True)
