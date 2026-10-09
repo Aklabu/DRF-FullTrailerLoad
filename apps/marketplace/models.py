@@ -102,6 +102,11 @@ class Bid(models.Model):
 
 # created when a bid is accepted — locks in the agreed price and both parties
 class Booking(models.Model):
+    class Status(models.TextChoices):
+        BOOKED = 'booked', 'Booked'
+        IN_TRANSIT = 'in_transit', 'In Transit'
+        COMPLETED = 'completed', 'Completed'
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     booking_ref = models.CharField(max_length=20, unique=True, editable=False)
     load = models.OneToOneField(Load, on_delete=models.CASCADE, related_name='booking')
@@ -117,8 +122,10 @@ class Booking(models.Model):
         related_name='carrier_bookings',
     )
     agreed_price = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=15, choices=Status.choices, default=Status.BOOKED)
+    completed_by_shipper = models.BooleanField(default=False)
+    completed_by_carrier = models.BooleanField(default=False)
     confirmed_at = models.DateTimeField(auto_now_add=True)
-    # set when both parties mark the job complete
     completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:

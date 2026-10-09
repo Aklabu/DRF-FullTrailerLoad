@@ -77,7 +77,7 @@ class ReviewStatusView(APIView):
         reviewer = ctx['reviewer']
         reviewee = ctx['reviewee']
 
-        eligible = booking.completed_at is not None
+        eligible = booking.status == Booking.Status.COMPLETED
         already_reviewed = Review.objects.filter(booking=booking, reviewer=reviewer).exists()
 
         data = {
@@ -118,7 +118,7 @@ class SubmitReviewView(APIView):
         reviewer = ctx['reviewer']
         reviewee = ctx['reviewee']
 
-        if not booking.completed_at:
+        if booking.status != Booking.Status.COMPLETED:
             return CustomResponse.error(
                 'Reviews can only be submitted after both parties confirm job completion.',
                 status_code=status.HTTP_403_FORBIDDEN,

@@ -330,6 +330,63 @@ class BookingDetailView(APIView):
         )
 
 
+# marks booking complete from caller's side and fully completes if both parties have marked it
+class BookingCompleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request, booking_id):
+        try:
+            booking = Booking.objects.select_for_update().select_related('load').get(id=booking_id)
+        except Booking.DoesNotExist:
+            return CustomResponse.error('Booking not found.', status_code=status.HTTP_404_NOT_FOUND)
+
+        if booking.shipper != request.user and booking.carrier != request.user:
+            return CustomResponse.error(
+                'You are not a party to this booking.',
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
+
+        is_shipper = booking.shipper == request.user
+
+        if is_shipper:
+            if booking.completed_by_shipper:
+                return CustomResponse.error(
+                    'You have already marked this booking as complete.',
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+            booking.completed_by_shipper = True
+        else:
+            if booking.completed_by_carrier:
+                return CustomResponse.error(
+                    'You have already marked this booking as complete.',
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                )
+            booking.completed_by_carrier = True
+
+        both_completed = booking.completed_by_shipper and booking.completed_by_carrier
+
+        if both_completed and not booking.completed_at:
+            booking.status = Booking.Status.COMPLETED
+            booking.completed_at = timezone.now()
+            booking.load.status = Load.Status.COMPLETED
+            booking.load.save(update_fields=['status'])
+            _log(booking.load, request.user, f'Booking {booking.booking_ref} marked complete by both parties.')
+
+        booking.save(update_fields=['completed_by_shipper', 'completed_by_carrier', 'status', 'completed_at'])
+
+        return CustomResponse.success(
+            message='Booking marked as complete.' if not both_completed else 'Booking fully completed by both parties.',
+            data={
+                'booking_id': str(booking.id),
+                'both_completed': both_completed,
+                'completed_by_shipper': booking.completed_by_shipper,
+                'completed_by_carrier': booking.completed_by_carrier,
+                'completed_at': booking.completed_at,
+            },
+        )
+
+
 # carrier browses open/bidding loads with filters, sorting, and pagination
 class LoadBrowseView(APIView):
     permission_classes = [IsAuthenticated, IsVerifiedCarrier]

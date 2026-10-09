@@ -5,6 +5,7 @@ from .views import (
     BidAcceptView,
     BidCounterView,
     BidRejectView,
+    BookingCompleteView,
     BookingDetailView,
     CapacityCreateView,
     CapacityDeactivateView,
@@ -41,6 +42,7 @@ urlpatterns = [
 
     # bookings
     path('bookings/<uuid:booking_id>/', BookingDetailView.as_view(), name='marketplace-booking-detail'),
+    path('bookings/<uuid:booking_id>/complete/', BookingCompleteView.as_view(), name='marketplace-booking-complete'),
 
     # carrier-specific
     path('carrier/my-bids/', MyBidsView.as_view(), name='marketplace-my-bids'),

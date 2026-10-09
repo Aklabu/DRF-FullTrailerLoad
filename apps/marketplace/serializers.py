@@ -40,14 +40,20 @@ class AuditLogSerializer(serializers.ModelSerializer):
 # full bid representation including nested carrier info
 class BidSerializer(serializers.ModelSerializer):
     carrier = CarrierSummarySerializer(read_only=True)
+    booking_id = serializers.SerializerMethodField()
+
+    def get_booking_id(self, obj):
+        if hasattr(obj, 'booking'):
+            return str(obj.booking.id)
+        return None
 
     class Meta:
         model = Bid
         fields = (
             'id', 'carrier', 'amount', 'counter_amount',
-            'status', 'note', 'placed_at',
+            'status', 'note', 'placed_at', 'booking_id',
         )
-        read_only_fields = ('id', 'carrier', 'counter_amount', 'status', 'placed_at')
+        read_only_fields = ('id', 'carrier', 'counter_amount', 'status', 'placed_at', 'booking_id')
 
 
 # validates a new bid submitted by a carrier
@@ -164,6 +170,12 @@ class LoadCarrierListSerializer(serializers.ModelSerializer):
 class LoadCarrierDetailSerializer(serializers.ModelSerializer):
     bid_count = serializers.IntegerField(source='bids.count', read_only=True)
     poster = PosterSummarySerializer(read_only=True)
+    booking_id = serializers.SerializerMethodField()
+
+    def get_booking_id(self, obj):
+        if hasattr(obj, 'booking'):
+            return str(obj.booking.id)
+        return None
 
     class Meta:
         model = Load
@@ -172,7 +184,7 @@ class LoadCarrierDetailSerializer(serializers.ModelSerializer):
             'origin', 'destination', 'pickup_date', 'delivery_date',
             'cubic_feet', 'weight', 'equipment_type',
             'fixed_price', 'special_requirements',
-            'posted_at', 'bid_count', 'poster',
+            'posted_at', 'bid_count', 'poster', 'booking_id',
         )
 
 
@@ -206,6 +218,7 @@ class BookingSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'booking_ref', 'job_id', 'confirmed_at',
             'agreed_price', 'load', 'shipper', 'carrier',
+            'status', 'completed_by_shipper', 'completed_by_carrier', 'completed_at',
         )
 
 
