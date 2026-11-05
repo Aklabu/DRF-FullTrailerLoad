@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 
 def send_welcome_email(user, company):
     subject = 'Welcome to FullTrailerLoad'
-    if company.tier == 'marketplace':
+    if company.tier == 'full_marketplace':
         body = (
             f'Hi {company.name},\n\n'
             'Your registration is received and your account is pending verification. '

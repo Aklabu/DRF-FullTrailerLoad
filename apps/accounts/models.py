@@ -14,8 +14,9 @@ class Company(models.Model):
         CARRIER = 'carrier', 'Carrier'
 
     class Tier(models.TextChoices):
-        BULLETIN = 'bulletin', 'Bulletin'
-        MARKETPLACE = 'marketplace', 'Marketplace'
+        BULLETIN_BOARD = 'bulletin_board', 'Bulletin Board'
+        BULLETIN_PLUS = 'bulletin_plus', 'Bulletin Plus'
+        FULL_MARKETPLACE = 'full_marketplace', 'Full Marketplace'
 
     class VerificationStatus(models.TextChoices):
         VERIFIED = 'verified', 'Verified'
@@ -36,7 +37,7 @@ class Company(models.Model):
     zip_code = models.CharField(max_length=20)
     website = models.CharField(max_length=255, blank=True)
     role = models.CharField(max_length=10, choices=Role.choices)
-    tier = models.CharField(max_length=15, choices=Tier.choices, default=Tier.BULLETIN)
+    tier = models.CharField(max_length=20, choices=Tier.choices, default=Tier.BULLETIN_BOARD)
     verification_status = models.CharField(
         max_length=15,
         choices=VerificationStatus.choices,

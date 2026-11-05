@@ -42,11 +42,11 @@ def _send_verification_email(company, action_label):
     pass
 
 
-@admin.action(description='✅ Approve as Basic (bulletin tier)')
+@admin.action(description='✅ Approve as Basic (bulletin board tier)')
 def approve_as_basic(modeladmin, request, queryset):
     updated = queryset.update(
         verification_status=Company.VerificationStatus.BASIC,
-        tier=Company.Tier.BULLETIN,
+        tier=Company.Tier.BULLETIN_BOARD,
         reviewed_at=timezone.now(),
         rejection_reason='',
         info_requested='',
@@ -56,11 +56,11 @@ def approve_as_basic(modeladmin, request, queryset):
     messages.success(request, f'{updated} company/companies approved as Basic.')
 
 
-@admin.action(description='⭐ Approve as Verified (marketplace tier)')
+@admin.action(description='⭐ Approve as Verified (full marketplace tier)')
 def approve_as_verified(modeladmin, request, queryset):
     updated = queryset.update(
         verification_status=Company.VerificationStatus.VERIFIED,
-        tier=Company.Tier.MARKETPLACE,
+        tier=Company.Tier.FULL_MARKETPLACE,
         reviewed_at=timezone.now(),
         rejection_reason='',
         info_requested='',

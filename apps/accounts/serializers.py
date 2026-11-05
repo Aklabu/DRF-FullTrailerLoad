@@ -45,7 +45,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 Company.VerificationStatus.PENDING,
                 Company.VerificationStatus.NEEDS_INFO,
             )
-            if company.tier == Company.Tier.MARKETPLACE and company.verification_status in blocked_statuses:
+            if company.tier == Company.Tier.FULL_MARKETPLACE and company.verification_status in blocked_statuses:
                 raise serializers.ValidationError({
                     'detail': 'Your account is pending verification.',
                     'code': 'account_not_verified',
@@ -131,13 +131,13 @@ class RegisterSerializer(serializers.Serializer):
             website=validated_data.get('website', ''),
             role=validated_data['role'],
             tier=tier,
-            # Marketplace accounts start as pending; bulletin gets basic access immediately
+            # Full marketplace starts as pending; lower tiers get basic access immediately
             verification_status=(
                 Company.VerificationStatus.PENDING
-                if tier == Company.Tier.MARKETPLACE
+                if tier == Company.Tier.FULL_MARKETPLACE
                 else Company.VerificationStatus.BASIC
             ),
-            submitted_at=now if tier == Company.Tier.MARKETPLACE else None,
+            submitted_at=now if tier == Company.Tier.FULL_MARKETPLACE else None,
         )
 
         DotMcInfo.objects.create(
@@ -328,7 +328,7 @@ class LoginOtpSerializer(serializers.Serializer):
                 Company.VerificationStatus.PENDING,
                 Company.VerificationStatus.NEEDS_INFO,
             )
-            if company.tier == Company.Tier.MARKETPLACE and company.verification_status in blocked_statuses:
+            if company.tier == Company.Tier.FULL_MARKETPLACE and company.verification_status in blocked_statuses:
                 raise serializers.ValidationError({
                     'detail': 'Your account is pending verification.',
                     'code': 'account_not_verified',
