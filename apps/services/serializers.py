@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import SupportAttachment, SupportTicket
+from .models import ContactSubmission, SupportAttachment, SupportTicket
 
 # accepted MIME types for support attachments
 _ALLOWED_CONTENT_TYPES = ('application/pdf', 'image/png', 'image/jpeg')
@@ -16,6 +16,16 @@ def _validate_attachment(file):
     if content_type not in _ALLOWED_CONTENT_TYPES:
         raise serializers.ValidationError('Only PDF, PNG, and JPG files are accepted.')
     return file
+
+
+class ContactSubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactSubmission
+        fields = ('full_name', 'phone', 'email', 'company_name', 'fleet_size', 'message')
+        extra_kwargs = {
+            'company_name': {'required': False, 'allow_blank': True},
+            'fleet_size': {'required': False, 'allow_blank': True},
+        }
 
 
 # validates the public contact form submission — maps `name` → full_name, `email` → work_email

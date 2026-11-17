@@ -1,14 +1,15 @@
 import requests
 from rest_framework import status
-from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
 from utils.response import CustomResponse
 
-from .models import SupportTicket
-from .notifications import send_ticket_confirmation_email, send_urgent_alert_email
-from .serializers import ContactSerializer, TrackingResultSerializer
+from .notifications import (
+    send_contact_confirmation_email,
+    send_contact_notification_email,
+)
+from .serializers import ContactSubmissionSerializer, TrackingResultSerializer
 
 # external tracking API — base URL kept here so it's easy to override via settings
 _TRACKING_API_URL = 'https://movingwyze.com/api/tracking/search/'
@@ -16,25 +17,31 @@ _TRACKING_API_URL = 'https://movingwyze.com/api/tracking/search/'
 _JOB_ID_MAX_LEN = 15
 
 
-# public endpoint — creates a SupportTicket and sends confirmation / urgent-alert emails
+# public contact form — stores submission, notifies team, confirms to submitter
 class ContactView(APIView):
     permission_classes = [AllowAny]
-    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
-        serializer = ContactSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        ticket = serializer.save()
+        serializer = ContactSubmissionSerializer(data=request.data)
+        if not serializer.is_valid():
+            return CustomResponse.error(
+                'Please correct the errors below.',
+                status_code=status.HTTP_400_BAD_REQUEST,
+                errors=serializer.errors,
+            )
 
-        # always send submitter a confirmation
-        send_ticket_confirmation_email(ticket)
-
-        # urgent tickets get an immediate alert to the support team inbox
-        if ticket.urgency == SupportTicket.Urgency.URGENT:
-            send_urgent_alert_email(ticket)
+        try:
+            submission = serializer.save()
+            send_contact_notification_email(submission)
+            send_contact_confirmation_email(submission)
+        except Exception:
+            return CustomResponse.error(
+                'Something went wrong. Please try again.',
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         return CustomResponse.success(
-            message='Our freight operations team will respond within 2 business hours. Check your email for a ticket confirmation.',
+            message='Your message has been received.',
             status_code=status.HTTP_201_CREATED,
         )
 

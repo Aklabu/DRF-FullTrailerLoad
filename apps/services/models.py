@@ -8,6 +8,23 @@ def _attachment_upload_path(instance, filename):
     return f'services/support/{instance.ticket_id}/{filename}'
 
 
+# submission from the public "Contact Us" form — stored for admin review
+class ContactSubmission(models.Model):
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=50)
+    company_name = models.CharField(max_length=255, blank=True)
+    fleet_size = models.CharField(max_length=100, blank=True)
+    message = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-submitted_at']
+
+    def __str__(self):
+        return f'{self.full_name} <{self.email}>'
+
+
 # a support request submitted via the public contact form
 class SupportTicket(models.Model):
     class Urgency(models.TextChoices):

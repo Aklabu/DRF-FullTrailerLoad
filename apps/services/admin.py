@@ -2,7 +2,16 @@ from django.contrib import admin
 from django.utils import timezone
 from unfold.admin import ModelAdmin as UnfoldModelAdmin
 
-from .models import SupportAttachment, SupportTicket
+from .models import ContactSubmission, SupportAttachment, SupportTicket
+
+
+@admin.register(ContactSubmission)
+class ContactSubmissionAdmin(UnfoldModelAdmin):
+    list_display = ('full_name', 'email', 'phone', 'company_name', 'fleet_size', 'submitted_at')
+    search_fields = ('full_name', 'email', 'phone', 'company_name', 'message')
+    readonly_fields = ('submitted_at',)
+    ordering = ('-submitted_at',)
+
 
 
 # inline to show attachments alongside their ticket in the detail view
