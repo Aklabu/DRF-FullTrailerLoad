@@ -19,17 +19,15 @@ Backend REST API for [fulltrailerload.com](https://fulltrailerload.com), a house
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Language | Python 3.11+ |
-| Framework | Django + Django REST Framework |
-| Authentication | JWT via `djangorestframework-simplejwt` |
-| Real-time | Django Channels + Redis (WebSockets) |
-| Task queue | Celery + Redis |
-| Database | PostgreSQL (production) / SQLite (development) |
-| Admin | Django Unfold |
-| CORS | `django-cors-headers` |
-| Filtering | `django-filter` |
+- **Language** — Python 3.11+
+- **Framework** — Django + Django REST Framework
+- **Authentication** — JWT via `djangorestframework-simplejwt`
+- **Real-time** — Django Channels + Redis (WebSockets)
+- **Task queue** — Celery + Redis
+- **Database** — PostgreSQL (production) / SQLite (development)
+- **Admin** — Django Unfold
+- **CORS** — `django-cors-headers`
+- **Filtering** — `django-filter`
 
 ---
 
@@ -42,7 +40,7 @@ DRF-FullTrailerLoad/
 │   ├── marketplace/    # move jobs, bids, bookings, capacity postings, audit log
 │   ├── messaging/      # direct messages + community chat (WebSocket)
 │   ├── notifications/  # in-app notification feed and preferences
-│   ├── reviews/        # post-booking company reviews and rating cache
+│   ├── reviews/        # post-job company reviews and rating cache
 │   └── services/       # contact form, shipment tracking proxy
 ├── config/
 │   ├── settings.py
@@ -91,20 +89,18 @@ python manage.py createsuperuser
 
 Copy `.env.example` to `.env` and fill in the values.
 
-| Variable | Description |
-|---|---|
-| `SECRET_KEY` | Django secret key |
-| `DEBUG` | `True` for local development |
-| `ALLOWED_HOSTS` | Comma-separated hostnames e.g. `localhost,127.0.0.1` |
-| `DATABASE_URL` | DB connection string e.g. `postgresql://user:pass@localhost/db` |
-| `REDIS_URL` | Redis for Django Channels — default `redis://127.0.0.1:6379/0` |
-| `CELERY_BROKER_URL` | Redis for Celery broker — default `redis://127.0.0.1:6379/1` |
-| `CELERY_RESULT_BACKEND` | Redis for Celery results — default `redis://127.0.0.1:6379/1` |
-| `CORS_ALLOWED_ORIGINS` | Frontend origins e.g. `http://localhost:3000` |
-| `CSRF_TRUSTED_ORIGINS` | HTTPS domains for production e.g. `https://fulltrailerload.com` |
-| `EMAIL_HOST_USER` | SMTP email address |
-| `EMAIL_HOST_PASSWORD` | SMTP app password |
-| `DEFAULT_FROM_EMAIL` | Sender address for outgoing emails |
+- `SECRET_KEY` — Django secret key
+- `DEBUG` — `True` for local development
+- `ALLOWED_HOSTS` — comma-separated hostnames e.g. `localhost,127.0.0.1`
+- `DATABASE_URL` — DB connection string e.g. `postgresql://user:pass@localhost/db`
+- `REDIS_URL` — Redis for Django Channels, default `redis://127.0.0.1:6379/0`
+- `CELERY_BROKER_URL` — Redis for Celery broker, default `redis://127.0.0.1:6379/1`
+- `CELERY_RESULT_BACKEND` — Redis for Celery results, default `redis://127.0.0.1:6379/1`
+- `CORS_ALLOWED_ORIGINS` — frontend origins e.g. `http://localhost:3000`
+- `CSRF_TRUSTED_ORIGINS` — HTTPS domains for production e.g. `https://fulltrailerload.com`
+- `EMAIL_HOST_USER` — SMTP email address
+- `EMAIL_HOST_PASSWORD` — SMTP app password
+- `DEFAULT_FROM_EMAIL` — sender address for outgoing emails
 
 ---
 
@@ -112,24 +108,41 @@ Copy `.env.example` to `.env` and fill in the values.
 
 All endpoints are prefixed with `/api/`. JWT Bearer token required unless marked **public**.
 
-| App | Prefix | Key Endpoints |
-|---|---|---|
-| Accounts | `/api/accounts/` | `register/`, `login/`, `logout/`, `otp/verify/`, `me/`, `password/forgot/`, `password/reset/` |
-| Marketplace | `/api/marketplace/` | `loads/`, `loads/browse/`, `loads/<id>/bids/`, `bookings/<id>/complete/`, `capacity/` |
-| Messaging | `/api/` | `messages/`, `messages/send/`, `messages/<id>/`, `community/messages/` |
-| Reviews | `/api/` | `marketplace/jobs/<id>/review/`, `profiles/<id>/`, `profiles/<id>/reviews/` |
-| Notifications | `/api/` | `notifications/`, `notifications/unread-count/`, `notifications/read-all/` |
-| Services | `/api/` | `contact/` **(public)**, `tracking/search/` **(public)** |
+**Accounts** — `/api/accounts/`
+- `register/`, `login/`, `logout/`, `token/refresh/`
+- `otp/verify/`
+- `me/`, `me/documents/`, `me/verification-status/`
+- `password/forgot/`, `password/reset/`, `password/change/`
 
-WebSocket endpoints:
-- `ws://<host>/ws/messages/` — real-time direct messaging
-- `ws://<host>/ws/community/` — real-time community chat
+**Marketplace** — `/api/marketplace/`
+- `loads/`, `loads/browse/`, `loads/<id>/`
+- `loads/<id>/bids/`, `loads/<id>/bids/mine/`, `loads/<id>/bids/<bid_id>/accept/`
+- `bookings/<id>/`, `bookings/<id>/complete/`
+- `capacity/`, `capacity/<id>/`, `capacity/<id>/offers/`
+- `carrier/my-bids/`, `carrier/my-capacity/`
+
+**Messaging** — `/api/`
+- `messages/`, `messages/send/`, `messages/<id>/`, `messages/unread-count/`
+- `community/messages/`, `community/messages/send/`
+- WebSocket: `ws://<host>/ws/messages/` and `ws://<host>/ws/community/`
+
+**Reviews** — `/api/`
+- `marketplace/jobs/<id>/review-status/`, `marketplace/jobs/<id>/review/`
+- `profiles/<id>/`, `profiles/<id>/reviews/`
+
+**Notifications** — `/api/`
+- `notifications/`, `notifications/unread-count/`, `notifications/read-all/`
+- `notifications/preferences/`, `notifications/<id>/read/`
+
+**Services** — `/api/`
+- `contact/` — **public**
+- `tracking/search/?job_id=<id>` — **public**
 
 ---
 
 ## Run Locally
 
-Start the Django development server:
+Start the development server:
 
 ```bash
 python manage.py runserver
@@ -143,7 +156,7 @@ redis-server
 celery -A config worker -l info
 ```
 
-Admin panel available at `http://localhost:8000/admin/`.
+Admin panel is available at `http://localhost:8000/admin/`.
 
 ---
 
